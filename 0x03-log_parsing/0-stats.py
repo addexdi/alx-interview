@@ -1,38 +1,45 @@
 #!/usr/bin/python3
 """
-Write a script that reads stdin line by line and computes metrics
+Script that reads stdin line by line and computes metrics:
 """
+
 import sys
 
-if __name__ == '__main__':
 
-    filesize, count = 0, 0
-    codes = ["200", "301", "400", "401", "403", "404", "405", "500"]
-    stats = {k: 0 for k in codes}
+if __name__ == "__main__":
 
-    def print_stats(stats: dict, file_size: int) -> None:
-        print("File size: {:d}".format(filesize))
-        for k, v in sorted(stats.items()):
-            if v:
-                print("{}: {}".format(k, v))
+    status_code = {"200": 0, "301": 0, "400": 0, "401": 0,
+                   "403": 0, "404": 0, "405": 0, "500": 0}
+    file_size = 0
+    total_lines = 0
+
+    def print_values(status_code, file_size):
+        print("File size: {:d}".format(file_size))
+        for key in sorted(status_code.keys()):
+            if status_code[key] != 0:
+                print("{}: {:d}".format(key, status_code[key]))
 
     try:
         for line in sys.stdin:
-            count += 1
-            data = line.split()
+            if total_lines != 0 and total_lines % 10 == 0:
+                print_values(status_code, file_size)
+
+            total_lines += 1
+            ln = line.split()
+
             try:
-                status_code = data[-2]
-                if status_code in stats:
-                    stats[status_code] += 1
-            except BaseException:
+                file_size += int(ln[-1])
+            except:
                 pass
+
             try:
-                filesize += int(data[-1])
-            except BaseException:
+                if ln[-2] in status_code:
+                    status_code[ln[-2]] += 1
+            except:
                 pass
-            if count % 10 == 0:
-                print_stats(stats, filesize)
-        print_stats(stats, filesize)
+
+        print_values(status_code, file_size)
+
     except KeyboardInterrupt:
-        print_stats(stats, filesize)
+        print_values(status_code, file_size)
         raise
